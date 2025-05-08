@@ -69,11 +69,14 @@
             <FileText :class="[alumno.ficha_medica ? 'text-orange-500 cursor-pointer' : 'text-gray-300 disabled']" class="w-5 h-5 mx-auto" @click="viewFichaMedica(alumno.ficha_medica)"/>
           </td>
           <td class="px-4 py-2 flex gap-2 justify-center">
-            <button class="text-blue-600 hover:text-blue-800">
-              <Pencil class="w-4 h-4" />
+            <button 
+              class="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 rounded-md text-sm font-medium shadow-sm transition-colors"
+              @click="editAlumno(alumno)"
+            >
+              Editar
             </button>
-            <button class="text-red-600 hover:text-red-800">
-              <Trash class="w-4 h-4" />
+            <button class="px-4 py-2 bg-red-500 text-white border border-red-500 hover:bg-red-600 rounded-md text-sm font-medium shadow-sm transition-colors">
+              Eliminar
             </button>
           </td>
         </tr>
@@ -111,14 +114,25 @@
 
           <label>Ficha médica</label>
           <input type="file" accept="application/pdf" @change="handleFileUpload" class="mb-2 w-full" />
+
+          <div v-if="isEditMode">
+            <label>Estado de deuda</label>
+            <select v-model="form.tiene_deuda" class="input-sm">
+              <option :value="false">Sin deuda</option>
+              <option :value="true">Con deuda</option>
+            </select>
+          </div>
         </div>
 
         <div class="flex justify-end gap-2 mt-4 w-full">
           <button class="w-max-content border-[1px] px-4 py-2 rounded border-1 border-[#f54b20] !bg-white !text-[#f54b20] hover:!bg-[#f54b20] hover:!text-white !font-sans" @click="showForm = false">
             Cancelar
           </button>
-          <button type="submit" class="w-max-content border-[1px] px-4 py-2 rounded border-1 border-[#f54b20] !bg-[#f54b20] !text-white hover:!bg-white hover:!text-[#f54b20] !font-sans">
-            Crear usuario
+          <button 
+            type="submit" 
+            class="w-max-content border-[1px] px-4 py-2 rounded border-1 border-[#f54b20] !bg-[#f54b20] !text-white hover:!bg-white hover:!text-[#f54b20] !font-sans"
+          >
+            {{ isEditMode ? 'Actualizar alumno' : 'Crear usuario' }}
           </button>
         </div>
       </form>
@@ -147,6 +161,8 @@ const search = ref('')
 const filtroDeuda = ref(null)
 const showOptions = ref(false)
 const showForm = ref(false)
+const isEditMode = ref(false)
+const alumnoSelected = ref(null)
 
 const opcionesDeuda = [
   { label: 'Todos', value: null },
@@ -209,49 +225,109 @@ const handleFileUpload = async (event) => {
   }
 
   form.value.ficha_medica = path
+
+  if (isEditMode.value && alumnoSelected.value?.id) {
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({ ficha_medica: path })
+      .eq('id', alumnoSelected.value.id)
+
+    if (updateError) {
+      console.error('Error al actualizar ficha médica:', updateError)
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'La ficha se subió pero no se pudo guardar en el alumno.',
+        life: 4000
+      })
+      return
+    }
+
+    loadAlumnos()
+  }
 }
 
 const submitAlumno = async () => {
-  if (!form.value.nombre || !form.value.email || !form.value.telefono || !form.value.dni || !form.value.fecha_ingreso ) {
+  if (!form.value.nombre || !form.value.email || !form.value.telefono || !form.value.dni || !form.value.fecha_ingreso) {
     alert('Por favor completa todos los campos obligatorios.')
     return
   }
 
   try {
-    const { error } = await supabase
-      .from('usuarios')
-      .insert([{
-        nombre: form.value.nombre,
-        email: form.value.email,
-        telefono: form.value.telefono,
-        dni: form.value.dni,
-        fecha_ingreso: form.value.fecha_ingreso,
-        ficha_medica: form.value.ficha_medica,
-        tiene_deuda: false,
-        rol: 'alumno',
-        gym_id: currentGimnasio.value.id
-      }])
+    if (isEditMode.value) {
+      // EDITAR
+      const { error } = await supabase
+        .from('usuarios')
+        .update({
+          nombre: form.value.nombre,
+          email: form.value.email,
+          telefono: form.value.telefono,
+          dni: form.value.dni,
+          fecha_ingreso: form.value.fecha_ingreso,
+          ficha_medica: form.value.ficha_medica,
+          tiene_deuda: form.value.tiene_deuda,
+        })
+        .eq('id', alumnoSelected.value.id)
 
-    if (error) throw error
+      if (error) throw error
 
-    toast.add({
-      severity: 'success',
-      summary: 'Alumno registrado',
-      detail: 'El alumno fue creado exitosamente.',
-      life: 3000
-    })
+      toast.add({
+        severity: 'success',
+        summary: 'Alumno actualizado',
+        detail: 'El alumno fue actualizado exitosamente.',
+        life: 3000
+      })
+    } else {
+      // CREAR
+      const { error } = await supabase
+        .from('usuarios')
+        .insert([{
+          nombre: form.value.nombre,
+          email: form.value.email,
+          telefono: form.value.telefono,
+          dni: form.value.dni,
+          fecha_ingreso: form.value.fecha_ingreso,
+          ficha_medica: form.value.ficha_medica,
+          tiene_deuda: false,
+          rol: 'alumno',
+          gym_id: currentGimnasio.value.id
+        }])
+
+      if (error) throw error
+
+      toast.add({
+        severity: 'success',
+        summary: 'Alumno registrado',
+        detail: 'El alumno fue creado exitosamente.',
+        life: 3000
+      })
+    }
+
     showForm.value = false
+    isEditMode.value = false
+    alumnoSelected.value = null
+    form.value = {
+      nombre: '',
+      email: '',
+      telefono: '',
+      dni: '',
+      fecha_ingreso: null,
+      ficha_medica: '',
+      tiene_deuda: null,
+    }
+
     loadAlumnos()
   } catch (error) {
-    console.error('Error al registrar alumno:', error)
+    console.error('Error:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'No se pudo registrar el alumno.',
+      detail: 'No se pudo procesar la solicitud.',
       life: 4000
     })
   }
 }
+
 
 const loadAlumnos = async () => {
   loading.value = true
@@ -286,6 +362,13 @@ const viewFichaMedica = async (path) => {
   }
 
   window.open(data.signedUrl, '_blank')
+}
+
+const editAlumno = (alumno) => {
+  form.value = { ...alumno  }
+  isEditMode.value = true
+  alumnoSelected.value = alumno
+  showForm.value = true
 }
 
 onMounted(loadAlumnos)
