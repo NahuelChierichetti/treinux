@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.p-button {
+    color: #ffffff;
+    background: #f54b20 !important;
+    border: 1px solid #f54b20 !important;
+}
+
+.p-inputtext:enabled:hover {
+    border-color: #f54b20 !important;
+}
