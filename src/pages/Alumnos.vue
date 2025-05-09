@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <button @click="showOptions = true" class="bg-[#f54b20] text-white px-4 py-2 rounded-md hover:bg-white hover:text-[#f54b20] border-[1px] border-[#f54b20]">
+    <button @click="showOptions = true" class="bg-[#f54b20] text-white px-3 py-2 rounded-md hover:bg-[#e34f29] hover:text-white border-[1px] border-[#f54b20]">
       + Nuevo Alumno
     </button>
   </div>
@@ -75,7 +75,7 @@
             >
               Editar
             </button>
-            <button class="px-4 py-2 bg-red-500 text-white border border-red-500 hover:bg-red-600 rounded-md text-sm font-medium shadow-sm transition-colors">
+            <button class="px-4 py-2 bg-red-500 text-white border border-red-500 hover:bg-red-600 rounded-md text-sm font-medium shadow-sm transition-colors" @click="confirmDelete(alumno)">
               Eliminar
             </button>
           </td>
@@ -83,8 +83,8 @@
       </tbody>
     </table>
 
-    <Dialog v-model:visible="showOptions" header="Nuevo Alumno" :modal="true" :style="{ width: '400px' }">
-      <div class="flex flex-col gap-4">
+    <Dialog v-model:visible="showOptions" header="Nuevo Alumno" :modal="true" :style="{ width: '40vw' }">
+      <div class="flex gap-4">
         <button class="w-full border-[1px] px-4 py-3 rounded border-[#f54b20] !bg-white !text-[#f54b20] hover:!bg-[#f54b20] hover:!text-white !font-sans" @click="abrirManual">
           Crear usuario manual
         </button>
@@ -125,12 +125,16 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-4 w-full">
-          <button class="w-max-content border-[1px] px-4 py-2 rounded border-1 border-[#f54b20] !bg-white !text-[#f54b20] hover:!bg-[#f54b20] hover:!text-white !font-sans" @click="showForm = false">
+          <button
+            type="button"
+            class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-md text-sm font-medium shadow-sm transition-colors"
+            @click="resetForm"
+          >
             Cancelar
           </button>
           <button 
             type="submit" 
-            class="w-max-content border-[1px] px-4 py-2 rounded border-1 border-[#f54b20] !bg-[#f54b20] !text-white hover:!bg-white hover:!text-[#f54b20] !font-sans"
+            class="px-4 py-2 border border-[#f54b20] text-white bg-[#f54b20] rounded-md text-sm font-medium shadow-sm transition-colors"
           >
             {{ isEditMode ? 'Actualizar alumno' : 'Crear usuario' }}
           </button>
@@ -138,6 +142,10 @@
       </form>
     </Dialog>
   </div>
+  <DialogConfirmDelete
+    v-model:visible="showConfirmDelete"
+    @confirm="deleteAlumno"
+  />
 </template>
 
 <script setup>
@@ -152,6 +160,7 @@ import { supabase } from '@/supabase'
 import { useStore } from 'vuex'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
+import DialogConfirmDelete from '../components/ui/DialogConfirmDelete.vue'
 
 const toast = useToast()
 const store = useStore()
@@ -163,6 +172,8 @@ const showOptions = ref(false)
 const showForm = ref(false)
 const isEditMode = ref(false)
 const alumnoSelected = ref(null)
+const alumnoDeleted = ref(null)
+const showConfirmDelete = ref(false)
 
 const opcionesDeuda = [
   { label: 'Todos', value: null },
@@ -255,7 +266,6 @@ const submitAlumno = async () => {
 
   try {
     if (isEditMode.value) {
-      // EDITAR
       const { error } = await supabase
         .from('usuarios')
         .update({
@@ -278,7 +288,6 @@ const submitAlumno = async () => {
         life: 3000
       })
     } else {
-      // CREAR
       const { error } = await supabase
         .from('usuarios')
         .insert([{
@@ -328,6 +337,20 @@ const submitAlumno = async () => {
   }
 }
 
+const resetForm = () => {
+  showForm.value = false
+  isEditMode.value = false
+  alumnoSelected.value = null
+  form.value = {
+    nombre: '',
+    email: '',
+    telefono: '',
+    dni: '',
+    fecha_ingreso: null,
+    ficha_medica: '',
+    tiene_deuda: null,
+  }
+}
 
 const loadAlumnos = async () => {
   loading.value = true
@@ -369,6 +392,40 @@ const editAlumno = (alumno) => {
   isEditMode.value = true
   alumnoSelected.value = alumno
   showForm.value = true
+}
+
+const confirmDelete = (alumno) => {
+  alumnoDeleted.value = alumno
+  showConfirmDelete.value = true
+}
+
+const deleteAlumno = async () => {
+  if (!alumnoDeleted.value?.id) return
+
+  const { error } = await supabase
+   .from('usuarios')
+   .delete()
+   .eq('id', alumnoDeleted.value.id)
+   
+   if (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo eliminar el alumno.',
+      life: 3000
+    })
+    return
+   }
+
+  toast.add({
+    severity: 'success',
+    summary: 'Alumno eliminado',
+    detail: 'El alumno fue eliminado exitosamente.',
+    life: 3000
+  })
+
+  alumnoDeleted.value = null
+  loadAlumnos()
 }
 
 onMounted(loadAlumnos)
