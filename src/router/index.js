@@ -1,37 +1,49 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from '../components/views/Dashboard.vue'
-import Alumnos from '../pages/Alumnos.vue'
-import Asistencias from '../pages/Asistencias.vue'
-import Rutinas from '../pages/Rutinas.vue'
-import Reportes from '../pages/Reportes.vue'
-import Pagos from '../pages/Pagos.vue'
-import Notas from '../pages/Notas.vue'
-import Configuracion from '../pages/Configuracion.vue'
-import RegistroGimnasio from '../pages/RegistroGimnasio.vue'
+import Members from '../pages/Members.vue'
+import Assistance from '../pages/Assistance.vue'
+import Routines from '../pages/Routines.vue'
+import Shifts from '../pages/Shifts.vue'
+import Team from '../pages/Team.vue'
+import Payments from '../pages/Payments.vue'
+import Notes from '../pages/Notes.vue'
+import RegisterAssistance from '../pages/RegisterAssistance.vue'
+import Settings from '../pages/Settings.vue'
+import SettingsAccount from '../pages/SettingsAccount.vue'
+import RegisterGym from '../pages/RegisterGym.vue'
 import Login from '../pages/Login.vue'
 import store from '../store/index.js'
-import RecuperarPassword from '../pages/RecuperarPassword.vue'
+import ResetPassword from '../pages/ResetPassword.vue'
+import RegisterNewMember from '../pages/RegisterNewMember.vue'
 
 const routes = [
     {
       path: '/',
       component: Dashboard,
       children: [
-        { path: '', redirect: '/alumnos' },
-        { path: 'alumnos', component: Alumnos },
-        { path: 'asistencias', component: Asistencias },
-        { path: 'rutinas', component: Rutinas },
-        { path: 'reportes', component: Reportes },
-        { path: 'pagos', component: Pagos },
-        { path: 'notas', component: Notas },
-        { path: 'configuracion', component: Configuracion },
+        { path: '', redirect: '/members' },
+        { path: 'members', component: Members },
+        { path: 'assistance', component: Assistance },
+        { path: 'routines', component: Routines },
+        { path: 'shifts', component: Shifts  },
+        { path: 'payments', component: Payments },
+        { path: 'notes', component: Notes },
+        { path: 'settings', component: Settings },
+        { path: 'register-assistance', component: RegisterAssistance },
+        { path: 'team', component: Team },
+        { path: 'settings/account', component: SettingsAccount },
       ]
     },
     {
-      path: '/registro-gimnasio',
+      path: '/register-gym',
       name: 'RegistroGimnasio',
-      component: RegistroGimnasio
+      component: RegisterGym
+    },
+    {
+      path: '/register-member',
+      name: 'RegistroMiembro',
+      component: RegisterNewMember
     },
     {
       path: '/login',
@@ -39,9 +51,9 @@ const routes = [
       component: Login
     },
     {
-      path: '/recuperar-contrasena',
+      path: '/reset-password',
       name: 'RecuperarPassword',
-      component: RecuperarPassword // creala aunque sea vacía
+      component: ResetPassword
     }
 ]
 
@@ -53,7 +65,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuth = store.getters.isAuthenticated
 
-  const publicRoutes = ['/login', '/registro-gimnasio']
+  const publicRoutes = ['/login', '/register-gym', '/reset-password']
   const requiresAuth = !publicRoutes.includes(to.path)
 
   if (requiresAuth && !isAuth) {
