@@ -36,7 +36,7 @@ const store = createStore({
     },
     setGimnasios({ commit }, gimnasios) {
       commit('setGimnasios', gimnasios)
-    }
+    },
   },
   getters: {
     isAuthenticated: state => !!state.user,

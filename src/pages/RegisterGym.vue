@@ -53,7 +53,7 @@
   
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Rol</label>
-            <input type="text" value="Dueño" disabled class="mt-1 block w-full bg-gray-100 border border-gray-300 rounded-md shadow-sm p-2 text-gray-500" />
+            <input type="text" value="superadmin" disabled class="mt-1 block w-full bg-gray-100 border border-gray-300 rounded-md shadow-sm p-2 text-gray-500" />
           </div>
   
           <div class="flex justify-between mt-6 gap-4">
@@ -113,7 +113,7 @@ const submitForm = async () => {
         nombre: form.value.nombreCompleto,
         email: form.value.email,
         telefono: form.value.telefono,
-        rol: 'dueño'
+        rol: 'superadmin'
       }])
 
     if (usuarioError) throw usuarioError
@@ -141,7 +141,7 @@ const submitForm = async () => {
       nombreCompleto: form.value.nombreCompleto,
       email: form.value.email,
       telefono: form.value.telefono,
-      rol: 'dueño',
+      rol: 'superadmin',
       gimnasioId: gimnasio.id,
       gimnasioNombre: form.value.nombreGimnasio
     })

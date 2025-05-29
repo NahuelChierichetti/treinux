@@ -72,19 +72,17 @@ const login = async () => {
       ...usuarioData
     }))
 
-    const { data: gimnasios, error: gimnasioError } = await supabase
+    const { data: gimnasioActual, error: gimnasioError } = await supabase
       .from('gimnasios')
       .select('*')
-      .eq('usuario_creador', user.id)
+      .eq('id', usuarioData.gym_id)
+      .single()
 
     if (gimnasioError) throw gimnasioError
 
-    // Por ahora, podés elegir el primero (o guardar todos en el store si querés listarlos)
-    const gimnasioActual = gimnasios[0] || null
-
     store.dispatch('setCurrentGimnasio', gimnasioActual)
 
-    router.push('/alumnos')
+    router.push('/members')
   } catch (error) {
     console.error(error)
     alert('Credenciales inválidas o error en el inicio de sesión.')

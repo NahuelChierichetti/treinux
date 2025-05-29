@@ -42,8 +42,7 @@
                     <button @click="profileOpen = !profileOpen" 
                             class="flex items-center space-x-2 relative focus:outline-none">
                     <div class="w-10 h-10 overflow-hidden rounded-full border-2 border-gray-300">
-                        <img src="../../assets/images/sin-imagen.jpg" 
-                            class="object-cover w-full h-full" alt="avatar">
+                        <img :src="imagenPerfil" class="object-cover w-full h-full" alt="avatar">
                     </div>
                     <div class="flex flex-col items-start">
                         <span class="font-medium text-gray-700">{{ nombreGimnasio }}</span>
@@ -53,13 +52,29 @@
                     </button>
                     
                     <div v-if="profileOpen" 
-                        class="absolute right-0 w-48 mt-2 py-2 bg-white rounded-md shadow-xl z-20">
-                        <a href="#" @click.prevent="navigateTo('/configuracion')" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <SettingsIcon class="w-4 h-4" /> Configurar Perfil
-                        </a>
-                        <a href="#" @click.prevent="logout" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <LogOut class="w-4 h-4" /> Cerrar Sesión
-                        </a>
+                        class="absolute right-0 w-52 mt-2 py-2 bg-white rounded-md shadow-xl z-20">
+                        <div class="flex flex-col gap-2 border-b border-gray-100 pb-2">
+                            <div class="flex items-start gap-2 px-4 pt-2 text-sm text-gray-400 font-semibold">
+                                Gimnasio
+                            </div>
+                            <a href="#" @click.prevent="navigateTo('/settings')" class="flex items-center gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">
+                                <Icon icon="tabler:settings" class="w-4 h-4" /> Configuración
+                            </a>
+                            <a href="#" @click.prevent="navigateTo('/configuracion')" class="flex items-center gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">
+                                <Icon icon="tabler:map-pin-plus" class="w-4 h-4" /> Crear gimnasio
+                            </a>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-start gap-2 px-4 pt-2 text-sm text-gray-400 font-semibold">
+                                Cuenta
+                            </div>
+                            <a href="#" @click.prevent="navigateTo('/settings/account')" class="flex items-center gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">
+                                <Icon icon="tabler:settings" class="w-4 h-4" /> Configuración
+                            </a>
+                            <a href="#" @click.prevent="logout" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Icon icon="tabler:logout" class="w-4 h-4" /> Cerrar Sesión
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -91,7 +106,9 @@ import {
   Settings,
   Settings as SettingsIcon,
   LogOut, 
+  CalendarFold
 } from 'lucide-vue-next'
+import { Icon } from '@iconify/vue'
 import LogoTreinux from '../../assets/images/logo-treinux.svg'
 
 const sidebarOpen = ref(false)
@@ -115,14 +132,18 @@ const emailUsuario = computed(() => {
     return `${email}`
 })
 
+const defaultImage = new URL('@/assets/images/sin-imagen.jpg', import.meta.url).href
+const imagenPerfil = ref(defaultImage)
+
 const menuItems = [
-  { name: 'Alumnos', icon: Users, path: '/alumnos' },
-  { name: 'Asistencias', icon: Calendar, path: '/asistencias' },
-  { name: 'Rutinas', icon: Dumbbell, path: '/rutinas' },
-  { name: 'Reportes', icon: BarChart, path: '/reportes' },
-  { name: 'Pagos', icon: CreditCard, path: '/pagos' },
-  { name: 'Notas', icon: FileText, path: '/notas' },
-  { name: 'Configuración', icon: Settings, path: '/configuracion' }
+  { name: 'Alumnos', icon: Users, path: '/members' },
+  { name: 'Asistencias', icon: Calendar, path: '/assistance' },
+  { name: 'Rutinas', icon: Dumbbell, path: '/routines' },
+  { name: 'Turnos', icon: CalendarFold, path: '/shifts' },
+  { name: 'Equipo', icon: Users, path: '/team' },
+  { name: 'Pagos', icon: CreditCard, path: '/payments' },
+  { name: 'Notas', icon: FileText, path: '/notes' },
+  { name: 'Configuración', icon: Settings, path: '/settings' }
 ]
 
 const navigateTo = (path) => {
@@ -141,10 +162,19 @@ const logout = async () => {
   }
 }
 
-onMounted(() => {
-  const isAuthenticated = store.getters.isAuthenticated
-  if (!isAuthenticated) {
-    router.push('/login')
-  }
+onMounted(async () => {
+    if (currentGimnasio.value?.imagen) {
+        const { data } = await supabase.storage
+        .from('gimnasios')
+        .createSignedUrl(currentGimnasio.value.imagen, 3600)
+
+        if (data?.signedUrl) {
+        imagenPerfil.value = data.signedUrl
+        }
+    }
+    const isAuthenticated = store.getters.isAuthenticated
+    if (!isAuthenticated) {
+        router.push('/login')
+    }
 })
 </script>
