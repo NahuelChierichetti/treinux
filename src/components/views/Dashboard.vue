@@ -53,16 +53,16 @@
                     
                     <div v-if="profileOpen" 
                         class="absolute right-0 w-52 mt-2 py-2 bg-white rounded-md shadow-xl z-20">
-                        <div class="flex flex-col gap-2 border-b border-gray-100 pb-2">
+                        <div v-if="user.rol === 'superadmin'" class="flex flex-col gap-2 border-b border-gray-100 pb-2">
                             <div class="flex items-start gap-2 px-4 pt-2 text-sm text-gray-400 font-semibold">
                                 Gimnasio
                             </div>
                             <a href="#" @click.prevent="navigateTo('/settings')" class="flex items-center gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">
                                 <Icon icon="tabler:settings" class="w-4 h-4" /> Configuración
                             </a>
-                            <a href="#" @click.prevent="navigateTo('/configuracion')" class="flex items-center gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">
+                            <!-- <a href="#" @click.prevent="navigateTo('/configuracion')" class="flex items-center gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">
                                 <Icon icon="tabler:map-pin-plus" class="w-4 h-4" /> Crear gimnasio
-                            </a>
+                            </a> -->
                         </div>
                         <div class="flex flex-col gap-2">
                             <div class="flex items-start gap-2 px-4 pt-2 text-sm text-gray-400 font-semibold">
@@ -143,7 +143,6 @@ const menuItems = [
   { name: 'Equipo', icon: Users, path: '/team' },
   { name: 'Pagos', icon: CreditCard, path: '/payments' },
   { name: 'Notas', icon: FileText, path: '/notes' },
-  { name: 'Configuración', icon: Settings, path: '/settings' }
 ]
 
 const navigateTo = (path) => {
