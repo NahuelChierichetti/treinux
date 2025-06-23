@@ -133,7 +133,7 @@
     { name: 'Alumnos', icon: Users, path: '/members' },
     { name: 'Asistencias', icon: Calendar, path: '/assistance' },
     { name: 'Rutinas', icon: Dumbbell, path: '/routines' },
-    { name: 'Turnos', icon: CalendarFold, path: '/shifts' },
+    // { name: 'Turnos', icon: CalendarFold, path: '/shifts' },
     { name: 'Actividades', icon: Activity, path: '/activities' },
     { name: 'Equipo', icon: Users, path: '/team' },
     { name: 'Pagos', icon: CreditCard, path: '/payments' },
