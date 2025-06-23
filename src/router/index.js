@@ -16,6 +16,8 @@ import Login from '../pages/Login.vue'
 import store from '../store/index.js'
 import ResetPassword from '../pages/ResetPassword.vue'
 import RegisterNewMember from '../pages/RegisterNewMember.vue'
+import Activities from '../pages/Activities.vue'
+import ManageClases from '../pages/ManageClases.vue'
 
 const routes = [
     {
@@ -33,6 +35,9 @@ const routes = [
         { path: 'register-assistance', component: RegisterAssistance },
         { path: 'team', component: Team },
         { path: 'settings/account', component: SettingsAccount },
+        { path: 'activities', component: Activities },
+        { path: 'manage-classes', component: ManageClases },
+        { path: 'activities/:actividadId', name: 'GestionClases', component: ManageClases }
       ]
     },
     {
@@ -54,7 +59,7 @@ const routes = [
       path: '/reset-password',
       name: 'RecuperarPassword',
       component: ResetPassword
-    }
+    },
 ]
 
 const router = createRouter({
