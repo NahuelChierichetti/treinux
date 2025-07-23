@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from '../components/views/Dashboard.vue'
+import DashboardHome from '../pages/DashboardHome.vue'
 import Members from '../pages/Members.vue'
 import Assistance from '../pages/Assistance.vue'
 import Routines from '../pages/Routines.vue'
@@ -24,7 +25,7 @@ const routes = [
       path: '/',
       component: Dashboard,
       children: [
-        { path: '', redirect: '/members' },
+        { path: '', component: DashboardHome },
         { path: 'members', component: Members },
         { path: 'assistance', component: Assistance },
         { path: 'routines', component: Routines },

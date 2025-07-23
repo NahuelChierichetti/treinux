@@ -1,33 +1,7 @@
 <template>
   <Toast />
-  <div class="flex flex-col md:flex-row flex-wrap md:items-end md:justify-between gap-4 mb-5">
-    <div class="flex flex-col md:flex-row gap-2">
-      <div class="flex gap-2">
-        <button 
-          class="px-4 py-2 border border-gray-300 text-gray-700 !bg-white rounded-md text-sm font-medium shadow-sm transition-colors flex items-center gap-2 w-auto"
-          @click="openFilterDialog"
-        >
-        <Icon icon="tabler:filter" class="text-xs text-gray-400 cursor-pointer h-4 w-4" />
-        Filtros
-        </button>
-        <button
-          v-if="hasActiveFilters"
-          class="text-sm font-medium text-gray-700"
-          @click="clearFilters"
-        >
-          Limpiar filtros
-        </button>
-      </div>
-    </div>
-    <div class="flex gap-2 justify-start sm:justify-end">
-      <Button
-        v-if="selectedIds.length > 1"
-        label="Eliminar seleccionados"
-        icon="pi pi-trash"
-        class="btn-delete"
-        severity="danger"
-        @click="confirmDeleteMultiple"
-      />
+  <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">Listado de Alumnos</h2>
       <Button 
         @click="showOptions = true" 
         class="btn-treinux"
@@ -36,94 +10,128 @@
         iconPos="left"
       />
     </div>
-  </div>
-  <div class="bg-white shadow rounded-lg p-6 overflox-x-auto w-full">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold">Listado de Alumnos</h2>
-      <ApplicationPagination
-        v-if="alumnos.length > 20"
-        :currentPage="currentPage"
-        :totalPages="totalPages"
-        @update:currentPage="(page) => currentPage = page"
-        class="mb-2"
-      />
-    </div>
-    <div class="overflow-x-auto w-full">
+
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between mb-6">
+        <div class="flex items-center w-full gap-2 mb-4 sm:mb-0">
+          <InputText
+            type="text"
+            v-model="search"
+            placeholder="Buscar por nombre, email o DNI..."
+            class="w-full sm:w-[95%] border-gray-300 rounded-md shadow-sm text-sm"
+          />
+          <button 
+            @click="openFilterDialog"
+            class="px-4 py-2 border border-gray-300 text-gray-700 !bg-white rounded-md text-sm font-medium shadow-sm flex items-center gap-2"
+          >
+            <Icon icon="tabler:filter" class="h-4 w-4 text-gray-400" />
+            Filtros
+          </button>
+          <button
+          v-if="hasActiveFilters"
+            class="text-sm text-gray-600 font-medium"
+            @click="clearFilters"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div>
+          <ApplicationPagination
+            v-if="alumnos.length > itemsPerPage"
+            :currentPage="currentPage"
+            :totalPages="totalPages"
+            @update:currentPage="(page) => currentPage = page"
+          />
+        </div>
+      </div>
+
       <ApplicationLoader v-if="loading" />
-      <table v-else class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr class="divide-x divide-gray-100">
-            <th class="px-4 py-2">
-              <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
-            </th>
-            <th class="flex justify-between px-4 py-3 text-left text-xs font-semibold text-[#f54b20] uppercase tracking-wider min-w-[180px]">
-              <span>Nombre</span>
-              <div class="relative">
-                <Icon icon="tabler:filter" class="text-xs text-gray-400 cursor-pointer h-4 w-4" @click="toggleSortMenu" />
-                <div
-                  v-if="showSortMenu"
-                  class="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded shadow z-50"
-                >
-                  <div
-                    class="text-sm px-3 text-gray-400 font-medium py-2 hover:bg-gray-100 cursor-pointer"
-                    @click="sortBy = 'asc'; showSortMenu = false"
-                  >
-                    a - z
-                  </div>
-                  <div
-                    class="text-sm px-3 py-2 text-gray-400 font-medium hover:bg-gray-100 cursor-pointer"
-                    @click="sortBy = 'desc'; showSortMenu = false"
-                  >
-                    z - a
-                  </div>
-                </div>
-              </div>
-            </th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">DNI</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Teléfono</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha Ingreso</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[120px]">Estado Deuda</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ficha Médica</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"></th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="alumno in paginatedAlumnos" :key="alumno.id">
-            <td class="px-4 py-2">
+
+      <div v-else>
+        <!-- Checkbox de seleccionar todos -->
+        <div class="flex items-center gap-2 mb-4">
+          <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
+          <label class="text-sm text-gray-700">Seleccionar todos</label>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+          <div
+            v-for="alumno in paginatedAlumnos"
+            :key="alumno.id"
+            class="relative border rounded-lg p-6 shadow-sm bg-white"
+          >
+            <div class="absolute top-4 left-4">
               <input type="checkbox" :value="alumno.id" v-model="selectedIds" />
-            </td>
-            <td class="px-4 py-2 text-slate-700 text-sm font-normal">{{ alumno.nombre }}</td>
-            <td class="px-4 py-2 text-slate-700 text-sm font-normal">{{ alumno.dni }}</td>
-            <td class="px-4 py-2 text-slate-700 text-sm font-normal">{{ alumno.telefono }}</td>
-            <td class="px-4 py-2 text-slate-700 text-sm font-normal">{{ alumno.email }}</td>
-            <td class="px-4 py-2 text-slate-700 text-sm font-normal">{{ formatFecha(alumno.fecha_ingreso) }}</td>
-            <td class="px-4 py-2 text-sm font-normal">
-              <span
-                :class="[
-                  'inline-flex items-center px-4 py-1.5 rounded-md text-xs font-semibold',
-                  alumno.tiene_deuda
-                    ? 'bg-red-100 text-red-600'
-                    : 'bg-green-100 text-green-600'
-                ]"
-              >
-                {{ alumno.tiene_deuda ? 'Debe' : 'Al día' }}
-              </span>
-            </td>
-            <td class="px-4 py-2 text-center">
-              <FileText :class="[alumno.ficha_medica ? 'text-orange-500 cursor-pointer' : 'text-gray-300 disabled']" class="w-5 h-5 mx-auto" @click="viewFichaMedica(alumno.ficha_medica)"/>
-            </td>
-            <td class="px-4 py-2 flex gap-2 justify-center">
-              <button class="px-2 py-1 text-sm text-gray-500" @click="editAlumno(alumno)">
-                <Icon icon="tabler:edit" class="h-4 w-4" />
+            </div>
+
+            <div class="absolute top-4 right-4 flex gap-2">
+              <button @click="editAlumno(alumno)">
+                <Icon icon="tabler:edit" class="w-4 h-4 text-gray-500 hover:text-gray-700" />
               </button>
-              <button class="px-2 py-1 text-sm text-red-500" @click="confirmDelete(alumno)">
-                <Icon icon="tabler:trash" class="h-4 w-4" />
+              <button @click="confirmDelete(alumno)">
+                <Icon icon="tabler:trash" class="w-4 h-4 text-red-500 hover:text-red-700" />
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <h3 class="text-base font-semibold text-gray-900 mt-6">{{ alumno.nombre }}</h3>
+              <p class="text-sm text-gray-500">DNI: {{ alumno.dni }}</p>
+            </div>
+            <div class="flex flex-col gap-1 py-4 border-b">
+              <div class="flex items-center text-sm text-gray-500">
+                <Icon icon="tabler:phone" class="w-4 h-4 mr-1" /> {{ alumno.telefono }}
+              </div>
+              <div class="flex items-center text-sm text-gray-500">
+                <Icon icon="tabler:mail" class="w-4 h-4 mr-1" /> {{ alumno.email }}
+              </div>
+              <div class="flex items-center text-sm text-gray-500">
+                <Icon icon="tabler:calendar" class="w-4 h-4 mr-1" /> Ingreso: {{ formatFecha(alumno.fecha_ingreso) }}
+              </div>
+            </div>
+            <div class="flex justify-between items-center pt-4">
+              <div class="flex items-center gap-2">
+                <Icon icon="tabler:credit-card" class="w-5 h-5" />
+                <span
+                  :class="[
+                    'px-3 py-1 rounded text-xs font-semibold',
+                    alumno.tiene_deuda ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                  ]"
+                >
+                  {{ alumno.tiene_deuda ? 'Debe' : 'Al día' }}
+                </span>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1 text-sm text-gray-500">
+                <Icon icon="tabler:file-text" class="w-5 h-5" :class="alumno.ficha_medica ? 'text-orange-500 cursor-pointer' : 'text-gray-300'" />
+                <span 
+                  v-if="alumno.ficha_medica"
+                  class="text-orange-500 cursor-pointer text-xs font-semibold"
+                  @click="viewFichaMedica(alumno.ficha_medica)"
+                >
+                  Ficha médica
+                </span>
+                <span v-else class="text-gray-300 text-xs font-semibold">Sin ficha médica</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cartel flotante eliminar abajo -->
+        <div
+          v-if="selectedIds.length > 0"
+          class="fixed bottom-4 bg-white border border-gray-300 shadow-lg rounded-lg p-4 flex right-4 items-center gap-4 z-50"
+        >
+          <span class="font-medium text-sm">{{ selectedIds.length }} seleccionados</span>
+          <Button
+            label="Eliminar seleccionados"
+            icon="pi pi-trash"
+            class="btn-delete"
+            severity="danger"
+            @click="confirmDeleteMultiple"
+          />
+        </div>
+      </div>
     </div>
 
     <Dialog 
@@ -150,118 +158,51 @@
       </div>
     </Dialog>
 
-    <Dialog 
-      v-model:visible="showForm" 
-      header="Registrar nuevo alumno" 
-      modal
-      class="w-full md:w-1/2 mx-2 md:mx-0"
-    >
-      <form @submit.prevent="submitAlumno" class="flex flex-col gap-4">
-        <div class="grid grid-cols-1 gap-2">
-          <label>Nombre</label>
-          <InputText v-model="form.nombre" class="input-sm" required />
+  <Dialog 
+    v-model:visible="showForm" 
+    header="Registrar nuevo alumno" 
+    modal
+    class="w-full md:w-1/2 mx-2 md:mx-0"
+  >
+    <form @submit.prevent="submitAlumno" class="flex flex-col gap-4">
+      <div class="grid grid-cols-1 gap-2">
+        <label>Nombre</label>
+        <InputText v-model="form.nombre" class="input-sm" required />
 
-          <label>Email</label>
-          <InputText v-model="form.email" class="input-sm" type="email" required />
+        <label>Email</label>
+        <InputText v-model="form.email" class="input-sm" type="email" required />
 
-          <label>Teléfono</label>
-          <InputText v-model="form.telefono" class="input-sm" type="tel" required />
+        <label>Teléfono</label>
+        <InputText v-model="form.telefono" class="input-sm" type="tel" required />
 
-          <label>DNI</label>
-          <InputText v-model="form.dni" class="input-sm" required />
+        <label>DNI</label>
+        <InputText v-model="form.dni" class="input-sm" required />
 
-          <label>Fecha de ingreso</label>
-          <Calendar v-model="form.fecha_ingreso" class="w-full input-treinux" dateFormat="dd/mm/yy" showIcon required />
+        <label>Fecha de ingreso</label>
+        <Calendar v-model="form.fecha_ingreso" class="w-full input-treinux" dateFormat="dd/mm/yy" showIcon required />
 
-          <div class="border border-gray-300 rounded-[3px] mt-3 p-4">
-            <div class="flex flex-col gap-2">
-              <label>Ficha médica</label>
-              <label for="ficha-upload" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer w-max">
-                Seleccionar archivo
-              </label>
-            </div>
-  
-            <input
-              id="ficha-upload"
-              type="file"
-              accept="application/pdf,image/jpeg,image/png"
-              @change="handleFileUpload"
-              hidden
-            />
-  
-            <div class="flex flex-col w-full border rounded mt-3 max-h-32 overflow-y-auto">
-              <div v-if="form.ficha_medica" class="flex justify-between items-center p-3 border-b">
-                <span class="text-xs break-all">{{ form.ficha_medica.split('/').pop() }}</span>
-                <div
-                  class="w-6 h-6 rounded-full bg-slate-200 cursor-pointer flex items-center justify-center"
-                  @click="form.ficha_medica = ''"
-                >
-                  <i class="pi pi-times text-sm"></i>
-                </div>
-              </div>
-              <div v-else>
-                <p class="text-xs p-3 text-gray-500">No hay archivos seleccionados.</p>
-              </div>
-            </div>
-  
-            <p class="text-xs font-medium text-blue-700 bg-blue-100 p-3 rounded mt-2">
-              El archivo debe ser PDF, JPG o PNG. Tamaño máximo: 1 MB.
-            </p>
+        <div class="border border-gray-300 rounded-[3px] mt-3 p-4">
+          <div class="flex flex-col gap-2">
+            <label>Ficha médica</label>
+            <label for="ficha-upload" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer w-max">
+              Seleccionar archivo
+            </label>
           </div>
 
-          <div v-if="isEditMode">
-            <label>Estado de deuda</label>
-            <select v-model="form.tiene_deuda" class="input-sm">
-              <option :value="false">Sin deuda</option>
-              <option :value="true">Con deuda</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="flex justify-between gap-2 mt-4 w-full">
-          <button
-            type="button"
-            class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-md text-sm font-medium shadow-sm transition-colors"
-            @click="resetForm"
-          >
-            Cancelar
-          </button>
-          <button 
-            type="submit" 
-            class="px-4 py-2 border border-[#f54b20] text-white bg-[#f54b20] rounded-md text-sm font-medium shadow-sm transition-colors"
-          >
-            {{ isEditMode ? 'Actualizar alumno' : 'Crear usuario' }}
-          </button>
-        </div>
-      </form>
-    </Dialog>
-
-    <Dialog 
-      v-model:visible="showImportDialog" 
-      header="Importar usuarios" 
-      modal
-      class="w-full md:w-1/2 mx-2 md:mx-0"
-    >
-      <div v-if="importStep === 1">
-        <p class="text-xs text-gray-600 mb-3">Subí un archivo .CSV con los usuarios a importar.</p>
-        <div class="flex flex-col gap-2">
-          <label for="csv-upload" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer w-max">
-            Seleccionar archivo
-          </label>
           <input
-            id="csv-upload"
+            id="ficha-upload"
             type="file"
-            accept=".csv"
-            @change="handleCSVUpload"
+            accept="application/pdf,image/jpeg,image/png"
+            @change="handleFileUpload"
             hidden
           />
 
           <div class="flex flex-col w-full border rounded mt-3 max-h-32 overflow-y-auto">
-            <div v-if="selectedFileName" class="flex justify-between items-center p-3 border-b">
-              <span class="text-xs">{{ selectedFileName }}</span>
+            <div v-if="form.ficha_medica" class="flex justify-between items-center p-3 border-b">
+              <span class="text-xs break-all">{{ form.ficha_medica.split('/').pop() }}</span>
               <div
                 class="w-6 h-6 rounded-full bg-slate-200 cursor-pointer flex items-center justify-center"
-                @click="clearSelectedFile"
+                @click="form.ficha_medica = ''"
               >
                 <i class="pi pi-times text-sm"></i>
               </div>
@@ -272,92 +213,158 @@
           </div>
 
           <p class="text-xs font-medium text-blue-700 bg-blue-100 p-3 rounded mt-2">
-            El archivo no debe superar los 25 MB.
+            El archivo debe ser PDF, JPG o PNG. Tamaño máximo: 1 MB.
           </p>
         </div>
-      </div>
 
-      <div v-else-if="importStep === 2">
-        <p class="text-xs text-gray-600 mb-3">Emparejá las columnas del archivo con los campos del sistema:</p>
-        <div v-for="field in expectedFields" :key="field.value" class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
-          <Dropdown
-            v-model="columnMapping[field.value]"
-            :options="csvHeaders"
-            placeholder="Seleccionar columna del CSV"
-            class="w-full input-treinux"
-          />
-        </div>
-        <div class="mt-4 flex items-center gap-2">
-          <input type="checkbox" v-model="updateUsersExist" id="updateExisting" />
-          <label for="updateExisting" class="text-sm text-gray-700">Actualizar usuarios existentes si ya existen</label>
+        <div v-if="isEditMode">
+          <label>Estado de deuda</label>
+          <select v-model="form.tiene_deuda" class="input-sm">
+            <option :value="false">Sin deuda</option>
+            <option :value="true">Con deuda</option>
+          </select>
         </div>
       </div>
 
-      <div v-else-if="importStep === 3" class="flex flex-col items-center justify-center py-6 gap-4">
-        <p class="text-sm text-gray-600">Importando usuarios...</p>
-
-        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div
-            class="bg-[#f54b20] h-3 transition-all duration-500 ease-out"
-            :style="{ width: importProgress + '%' }"
-          ></div>
-        </div>
-
-        <div v-if="importResult === 'success'" class="text-green-700 text-sm mt-4 text-center">
-          <p class="font-semibold text-base mb-2">✅ ¡Importación exitosa!</p>
-          <p v-if="importResumen.news > 0">{{ pluralize(importResumen.news, 'usuario importado', 'usuarios importados') }}</p>
-          <p v-if="importResumen.updates > 0">{{ pluralize(importResumen.updates, 'usuario actualizado', 'usuarios actualizados') }}</p>
-          <p v-if="importResumen.ignored > 0">{{ pluralize(importResumen.ignored, 'usuario ya existía y no fue modificado', 'usuarios ya existían y no fueron modificados') }}</p>
-        </div>
-        <p v-if="importResult === 'error'" class="text-red-600 font-medium mt-4">La importación falló. Intentalo nuevamente.</p>
+      <div class="flex justify-between gap-2 mt-4 w-full">
+        <button
+          type="button"
+          class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-md text-sm font-medium shadow-sm transition-colors"
+          @click="resetForm"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="submit" 
+          class="px-4 py-2 border border-[#f54b20] text-white bg-[#f54b20] rounded-md text-sm font-medium shadow-sm transition-colors"
+        >
+          {{ isEditMode ? 'Actualizar alumno' : 'Crear usuario' }}
+        </button>
       </div>
+    </form>
+  </Dialog>
 
-      <template #footer>
-        <div class="flex justify-end w-full">
-          <Button
-            v-if="importStep === 3 && importResult"
-            label="Finalizar importación"
-            class="btn-treinux"
-            @click="cancelarImportacion"
-          />
+  <Dialog 
+    v-model:visible="showImportDialog" 
+    header="Importar usuarios" 
+    modal
+    class="w-full md:w-1/2 mx-2 md:mx-0"
+  >
+    <div v-if="importStep === 1">
+      <p class="text-xs text-gray-600 mb-3">Subí un archivo .CSV con los usuarios a importar.</p>
+      <div class="flex flex-col gap-2">
+        <label for="csv-upload" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer w-max">
+          Seleccionar archivo
+        </label>
+        <input
+          id="csv-upload"
+          type="file"
+          accept=".csv"
+          @change="handleCSVUpload"
+          hidden
+        />
 
-          <template v-else>
-            <div class="flex gap-2 justify-between w-full">
-              <div>
-                <Button
-                  label="Cancelar"
-                  class="p-button-text btn-cancelar"
-                  @click="cancelarImportacion"
-                />
-              </div>
-              <div class="flex gap-2">
-                <Button
-                  v-if="importStep > 1"
-                  label="Atrás"
-                  class="p-button-secondary btn-cancelar"
-                  @click="importStep--"
-                />
-                <Button
-                  v-if="importStep === 1"
-                  label="Siguiente"
-                  class="p-button-primary btn-treinux"
-                  :disabled="!csvHeaders.length"
-                  @click="importStep = 2"
-                />
-                <Button
-                  v-if="importStep === 2"
-                  label="Importar"
-                  class="p-button-primary btn-treinux"
-                  @click="importUsersFromCSV"
-                />
-              </div>
+        <div class="flex flex-col w-full border rounded mt-3 max-h-32 overflow-y-auto">
+          <div v-if="selectedFileName" class="flex justify-between items-center p-3 border-b">
+            <span class="text-xs">{{ selectedFileName }}</span>
+            <div
+              class="w-6 h-6 rounded-full bg-slate-200 cursor-pointer flex items-center justify-center"
+              @click="clearSelectedFile"
+            >
+              <i class="pi pi-times text-sm"></i>
             </div>
-          </template>
+          </div>
+          <div v-else>
+            <p class="text-xs p-3 text-gray-500">No hay archivos seleccionados.</p>
+          </div>
         </div>
-      </template>
-    </Dialog>
-  </div>
+
+        <p class="text-xs font-medium text-blue-700 bg-blue-100 p-3 rounded mt-2">
+          El archivo no debe superar los 25 MB.
+        </p>
+      </div>
+    </div>
+
+    <div v-else-if="importStep === 2">
+      <p class="text-xs text-gray-600 mb-3">Emparejá las columnas del archivo con los campos del sistema:</p>
+      <div v-for="field in expectedFields" :key="field.value" class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        <Dropdown
+          v-model="columnMapping[field.value]"
+          :options="csvHeaders"
+          placeholder="Seleccionar columna del CSV"
+          class="w-full input-treinux"
+        />
+      </div>
+      <div class="mt-4 flex items-center gap-2">
+        <input type="checkbox" v-model="updateUsersExist" id="updateExisting" />
+        <label for="updateExisting" class="text-sm text-gray-700">Actualizar usuarios existentes si ya existen</label>
+      </div>
+    </div>
+
+    <div v-else-if="importStep === 3" class="flex flex-col items-center justify-center py-6 gap-4">
+      <p class="text-sm text-gray-600">Importando usuarios...</p>
+
+      <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+        <div
+          class="bg-[#f54b20] h-3 transition-all duration-500 ease-out"
+          :style="{ width: importProgress + '%' }"
+        ></div>
+      </div>
+
+      <div v-if="importResult === 'success'" class="text-green-700 text-sm mt-4 text-center">
+        <p class="font-semibold text-base mb-2">✅ ¡Importación exitosa!</p>
+        <p v-if="importResumen.news > 0">{{ pluralize(importResumen.news, 'usuario importado', 'usuarios importados') }}</p>
+        <p v-if="importResumen.updates > 0">{{ pluralize(importResumen.updates, 'usuario actualizado', 'usuarios actualizados') }}</p>
+        <p v-if="importResumen.ignored > 0">{{ pluralize(importResumen.ignored, 'usuario ya existía y no fue modificado', 'usuarios ya existían y no fueron modificados') }}</p>
+      </div>
+      <p v-if="importResult === 'error'" class="text-red-600 font-medium mt-4">La importación falló. Intentalo nuevamente.</p>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end w-full">
+        <Button
+          v-if="importStep === 3 && importResult"
+          label="Finalizar importación"
+          class="btn-treinux"
+          @click="cancelarImportacion"
+        />
+
+        <template v-else>
+          <div class="flex gap-2 justify-between w-full">
+            <div>
+              <Button
+                label="Cancelar"
+                class="p-button-text btn-cancelar"
+                @click="cancelarImportacion"
+              />
+            </div>
+            <div class="flex gap-2">
+              <Button
+                v-if="importStep > 1"
+                label="Atrás"
+                class="p-button-secondary btn-cancelar"
+                @click="importStep--"
+              />
+              <Button
+                v-if="importStep === 1"
+                label="Siguiente"
+                class="p-button-primary btn-treinux"
+                :disabled="!csvHeaders.length"
+                @click="importStep = 2"
+              />
+              <Button
+                v-if="importStep === 2"
+                label="Importar"
+                class="p-button-primary btn-treinux"
+                @click="importUsersFromCSV"
+              />
+            </div>
+          </div>
+        </template>
+      </div>
+    </template>
+  </Dialog>
   <DialogConfirmDelete
     v-model:visible="showConfirmDelete"
     @confirm="deleteAlumno"

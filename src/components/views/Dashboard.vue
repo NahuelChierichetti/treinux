@@ -130,6 +130,7 @@
   const imagenPerfil = ref(defaultImage)
   
   const menuItems = [
+    { name: 'Dashboard', icon: BarChart, path: '/' },
     { name: 'Alumnos', icon: Users, path: '/members' },
     { name: 'Asistencias', icon: Calendar, path: '/assistance' },
     { name: 'Rutinas', icon: Dumbbell, path: '/routines' },

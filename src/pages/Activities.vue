@@ -11,7 +11,7 @@
 
     <ApplicationLoader v-if="isLoading" />
     <div v-else class="flex w-full">
-      <div class="grid grid-cols-3 gap-6 w-full">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         <div v-for="actividad in actividades" :key="actividad.id"
           class="border rounded-md bg-white px-6 py-8 shadow flex flex-col justify-between">
           <div>
