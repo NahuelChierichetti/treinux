@@ -15,7 +15,12 @@ process.on('unhandledRejection', (reason, promise) => {
 })
 
 // Configuración de middleware
-app.use(cors())
+app.use(cors({
+  origin: ['https://treinux.com', 'http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(express.json())
 
 console.log('Configurando OpenAI con clave:', process.env.OPENAI_API_KEY ? 'Clave presente' : 'Clave ausente')
@@ -348,7 +353,7 @@ Ejemplo CORRECTO:
 })
 
 const PORT = process.env.PORT || 3001
-const server = app.listen(PORT, '127.0.0.1', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`AI backend listening on port ${PORT}`)
   console.log('Variables de entorno cargadas:', { PORT, NODE_ENV: process.env.NODE_ENV })
 })
