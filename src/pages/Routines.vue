@@ -321,7 +321,7 @@ async function generarRutinaAI() {
   aiPrompt.value = "" // Limpiar el input después de guardar
   
   try {
-    const response = await fetch('http://localhost:3001/api/generate-routine', {
+    const response = await fetch('https://treinux-production.up.railway.app/api/generate-routine', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
